@@ -121,13 +121,13 @@
       <div class="mt-4 flex flex-wrap lg:flex-nowrap">
         <el-button
           size="large"
-          @click="submitHandler"
+          @click="submitForm"
           class="w-full mb-5 lg:w-1/2"
           type="success"
           >Signup</el-button
         >
         <el-button
-          @click="resetHandler"
+          @click="resetForm"
           size="large"
           class="w-full lg:w-1/2 mx-0 lg:mx-3"
           type="danger"
@@ -148,7 +148,6 @@ interface SignupForm {
 
 import useForm, { ValidationRules } from "../composables/use-form";
 import validator from "validator";
-import { AxiosRequestConfig } from "axios";
 import { ref, watch } from "vue";
 
 const validatorRules: ValidationRules = {
@@ -170,16 +169,18 @@ const validatorRules: ValidationRules = {
     validator.isLength(value, options as validator.IsLengthOptions),
 };
 
-const { resetForm, submitForm, form, errors } = useForm<SignupForm>(
-  {
-    firstName: ``,
-    lastName: ``,
-    email: ``,
-    password: ``,
-    confirmPassword: ``,
-  },
-  validatorRules
-);
+const { resetForm, submitForm, form, errors, data, status } =
+  useForm<SignupForm>(
+    {
+      firstName: ``,
+      lastName: ``,
+      email: ``,
+      password: ``,
+      confirmPassword: ``,
+    },
+    validatorRules,
+    { url: `/api/signup`, method: `post` }
+  );
 
 const passwordsMatch = ref(true);
 
@@ -189,18 +190,4 @@ watch(
     (passwordsMatch.value = form.value.confirmPassword === form.value.password),
   { deep: true }
 );
-
-const data = ref({});
-
-const submitHandler = async () => {
-  data.value = {};
-  const config = {
-    url: `/api/signup`,
-    method: `post`,
-    data: form.value,
-  } as AxiosRequestConfig;
-  data.value = (await submitForm<SignupForm>(config))?.data;
-};
-
-const resetHandler = resetForm;
 </script>

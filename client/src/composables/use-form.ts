@@ -1,6 +1,7 @@
-import { reactive, Ref, ref, UnwrapRef, watch } from "vue";
+import { reactive, ref, watch } from "vue";
 import validator from "validator";
 import axios, { AxiosRequestConfig } from "axios";
+import useAxios from "./use-axios";
 
 export type ValidatorFunction = (
   value: string,
@@ -24,11 +25,13 @@ export interface ValidationRules {
 
 export default function useForm<T>(
   formState: FormState<T>,
-  validationRules: ValidationRules | null = null
+  validationRules: ValidationRules | null = null,
+  requestConfig: AxiosRequestConfig
 ) {
   const valid = ref(false);
   const errors = reactive({} as FormErrors);
   const form = ref(formState);
+  const { run, data, status } = useAxios(requestConfig);
 
   const resetForm = () =>
     Object.keys(form.value).forEach((i) => (form.value[i] = ``));
@@ -42,10 +45,10 @@ export default function useForm<T>(
         continue;
       }
       try {
-        const validated = rule(form.value[formKey]); // call function passaed in as second argument
+        const validated = rule(form.value[formKey]); // call function passed in as second argument
         if (!validated) {
           errors[formKey] = true;
-        } else delete errors[formKey]; // if validated successfully, reverse boolean to indicate no errors have occured
+        } else delete errors[formKey]; // if validated successfully, deletes boolean to indicate no errors are active.
       } catch (e) {
         console.error(
           `Error in validation rule for ${formKey}. 
@@ -56,14 +59,9 @@ export default function useForm<T>(
     valid.value = Object.keys(errors).length <= 0; // check if the value is fully validated
   };
 
-  const submitForm = async <T>(config: AxiosRequestConfig<T>) => {
-    try {
-      if (!valid.value) throw Error(`Validation error detected`);
-      const res = await axios(config);
-      return res;
-    } catch (err) {
-      console.error(`Unable to make request to ${config.url}`, err);
-    }
+  const submitForm = () => {
+    requestConfig.data = form.value;
+    valid.value && run();
   };
 
   watch(
@@ -81,5 +79,7 @@ export default function useForm<T>(
     form,
     errors,
     valid,
+    data,
+    status,
   };
 }

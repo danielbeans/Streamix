@@ -46,13 +46,13 @@
       <div class="mt-4 flex flex-wrap lg:flex-nowrap">
         <el-button
           size="large"
-          @click="submitHandler"
+          @click="submitForm"
           class="w-full mb-5 lg:w-1/2"
           type="success"
           >Login</el-button
         >
         <el-button
-          @click="resetHandler"
+          @click="resetForm"
           size="large"
           class="w-full lg:w-1/2 mx-0 lg:mx-3"
           type="danger"
@@ -62,6 +62,7 @@
     </div>
   </section>
 </template>
+
 <script lang="ts" setup>
 interface LoginForm {
   email: string;
@@ -70,10 +71,6 @@ interface LoginForm {
 
 import useForm, { ValidationRules } from "../composables/use-form";
 import validator from "validator";
-import { AxiosRequestConfig } from "axios";
-import { ref } from "vue";
-
-const data = ref({});
 
 const validatorRules: ValidationRules = {
   email: (value, options = {}) =>
@@ -82,20 +79,9 @@ const validatorRules: ValidationRules = {
     validator.isLength(value, options as validator.IsLengthOptions),
 };
 
-const { resetForm, submitForm, form, errors } = useForm<LoginForm>(
-  { email: ``, password: `` },
-  validatorRules
-);
-
-const submitHandler = async () => {
-  data.value = {};
-  const config = {
+const { resetForm, submitForm, form, errors, data, status } =
+  useForm<LoginForm>({ email: ``, password: `` }, validatorRules, {
     url: `/api/login`,
     method: `post`,
-    data: form.value,
-  } as AxiosRequestConfig;
-  data.value = (await submitForm<LoginForm>(config))?.data;
-};
-
-const resetHandler = resetForm;
+  });
 </script>

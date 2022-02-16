@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@types/validator": "^13.7.1",
+    "@vueuse/core": "^7.6.2",
     "autoprefixer": "^9",
     "axios": "^0.26.0",
     "core-js": "^3.6.5",
