@@ -2,6 +2,7 @@ import { reactive, ref, watch } from "vue";
 import validator from "validator";
 import axios, { AxiosRequestConfig } from "axios";
 import useAxios from "./use-axios";
+import { onMounted } from "@vue/runtime-core";
 
 export type ValidatorFunction = (
   value: string,
@@ -40,10 +41,7 @@ export default function useForm<T>(
     if (validationRules === null) return;
     for (const [formKey, rule] of Object.entries(validationRules)) {
       if (typeof rule !== `function`) continue;
-      if (form.value[formKey] === ``) {
-        delete errors[formKey];
-        continue;
-      }
+
       try {
         const validated = rule(form.value[formKey]); // call function passed in as second argument
         if (!validated) {
@@ -60,8 +58,9 @@ export default function useForm<T>(
   };
 
   const submitForm = () => {
+    validateFormData();
     requestConfig.data = form.value;
-    valid.value && run();
+    if (valid.value) run();
   };
 
   watch(

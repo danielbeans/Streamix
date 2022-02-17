@@ -1,10 +1,8 @@
 <template>
-  <div id="nav">
-    <router-link class="mx-2" to="/login">Login</router-link> |
-    <router-link class="mx-2" to="/signup">SIgnup</router-link>
-  </div>
-  <el-divider />
-  <router-view />
+  <Navigation />
+  <section class="container mx-auto">
+    <router-view />
+  </section>
 </template>
 
 <style lang="scss">

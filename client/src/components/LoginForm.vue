@@ -1,5 +1,5 @@
 <template>
-  <section class="login-form mt-10 mx-auto lg:w-full w-1/2">
+  <section class="login-form mt-10 mx-auto w-full">
     <h3 class="text-3xl mb-5">Welcome Back</h3>
     <p class="text-black-400 mb-3">
       New to Streamix?
@@ -7,7 +7,7 @@
         >Sign up.</router-link
       >
     </p>
-    <div class="flex flex-col lg:w-1/4 mx-10 lg:mx-auto">
+    <div class="flex flex-col lg:w-1/4 md:w-1/2 mx-8 md:mx-auto">
       <el-input
         type="text"
         size="large"
@@ -79,9 +79,12 @@ const validatorRules: ValidationRules = {
     validator.isLength(value, options as validator.IsLengthOptions),
 };
 
-const { resetForm, submitForm, form, errors, data, status } =
-  useForm<LoginForm>({ email: ``, password: `` }, validatorRules, {
+const { resetForm, submitForm, form, errors, data } = useForm<LoginForm>(
+  { email: ``, password: `` },
+  validatorRules,
+  {
     url: `/api/login`,
     method: `post`,
-  });
+  }
+);
 </script>

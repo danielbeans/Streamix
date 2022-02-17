@@ -1,5 +1,5 @@
 <template>
-  <section class="login-form mt-10 mx-auto lg:w-full w-1/2">
+  <section class="login-form mt-10 mx-auto w-full">
     <h3 class="text-3xl mb-5">Welcome</h3>
     <p class="text-black-400 mb-3">
       Already have an existing account?
@@ -8,7 +8,7 @@
       >
     </p>
 
-    <div class="flex flex-col lg:w-1/4 mx-10 lg:mx-auto">
+    <div class="flex flex-col md:w-1/2 xl:w-1/3 mx-8 md:mx-auto">
       <div class="flex">
         <el-input
           type="text"
