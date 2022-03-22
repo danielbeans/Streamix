@@ -1,7 +1,10 @@
+from os import environ
 from pymongo import MongoClient
+import environ
 
 
 class db_connector():
+    env = environ.Env()
     client = MongoClient(
-        'mongodb+srv://daniel:CWWXkPRk0iEY9qUw@streamix.zfoco.mongodb.net/Streamix?retryWrites=true&w=majority')
+        f'mongodb+srv://{env("DATABASE_USER")}:{env("DATABASE_PASS")}@streamix.zfoco.mongodb.net/{env("DATABASE_NAME")}?retryWrites=true&w=majority')
     db_handle = client['Streamix']
