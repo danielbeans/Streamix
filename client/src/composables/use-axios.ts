@@ -1,6 +1,6 @@
 import axios from "axios";
 import { AxiosError, AxiosRequestConfig } from "axios";
-import { FetchStatus } from "@/enum/status.enum";
+import { FetchStatus } from "../enum/status.enum";
 import { ref } from "vue";
 import { onMounted } from "@vue/runtime-core";
 

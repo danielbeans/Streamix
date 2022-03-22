@@ -23,10 +23,10 @@ yarn install
 Finally, run the client application:
 
 ```bash
-yarn serve
+yarn dev
 ```
 
-Voila! The client should be running on `http://localhost:8080`
+Voila! The client should be running on `http://localhost:3000`
 
 ---
 
