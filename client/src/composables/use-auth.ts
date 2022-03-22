@@ -1,5 +1,4 @@
-import { computed, reactive, ref, watchEffect } from "vue";
-import { FetchStatus } from "../enum/status.enum";
+import { computed, reactive, toRefs, watchEffect } from "vue";
 import useAxios from "./use-axios";
 export interface AuthObject {
   refresh_token: string;
@@ -7,11 +6,17 @@ export interface AuthObject {
   expires_at: number;
 }
 
-export default function useAuth(authInfo: AuthObject | null = null) {
-  const auth = ref<AuthObject>({
-    refresh_token: localStorage.getItem("access_token") ?? ``,
-    access_token: localStorage.getItem("refresh_token") ?? ``,
-    expires_at: parseInt(localStorage.getItem("expires_at") ?? `0`),
+const authState = reactive<AuthObject>({
+  refresh_token: localStorage.getItem("access_token") ?? ``,
+  access_token: localStorage.getItem("refresh_token") ?? ``,
+  expires_at: parseInt(localStorage.getItem("expires_at") ?? `0`),
+});
+
+export default function useAuth() {
+  const initialAuthState = reactive<AuthObject>({
+    refresh_token: ``,
+    access_token: ``,
+    expires_at: 0,
   });
 
   const { run, data, status } = useAxios<AuthObject>({
@@ -20,22 +25,28 @@ export default function useAuth(authInfo: AuthObject | null = null) {
     headers: {
       "Content-Type": `application/json`,
     },
-    data: auth,
+    data: authState,
   });
 
-  const tokenIsExpired = computed(() => auth.value.expires_at >= Date.now());
+  const isNotExpired = computed(() => authState.expires_at < Date.now());
 
   const isValidAuth = computed(
-    () => auth.value.refresh_token && auth.value.access_token && !tokenIsExpired
+    () =>
+      authState.refresh_token && authState.access_token && isNotExpired.value
   );
 
-  const isLoggedIn = computed(() => isValidAuth); // ! may not update, check for proper reactivity
+  const isLoggedIn = computed(() => !!isValidAuth.value);
 
   const authenticate = async () => {
-    if (isLoggedIn) return false;
+    if (isLoggedIn.value) return false;
     try {
       // await run();
-      if (true) auth.value = data.value as AuthObject; // ! this may pose a problem, test for proper reactivity
+      data.value = {
+        refresh_token: "refresh",
+        access_token: "access",
+        expires_at: 5,
+      };
+      if (data.value !== null) Object.assign(authState, data.value); // ! Remember to check status for success
       return true;
     } catch (e: unknown) {
       console.error(e);
@@ -43,17 +54,25 @@ export default function useAuth(authInfo: AuthObject | null = null) {
     }
   };
 
+  const unauthenticate = () => Object.assign(authState, initialAuthState);
+
   watchEffect(() =>
-    localStorage.setItem("access_token", auth.value.access_token)
+    localStorage.setItem("access_token", authState.access_token)
   );
 
   watchEffect(() =>
-    localStorage.setItem("refresh_token", auth.value.refresh_token)
+    localStorage.setItem("refresh_token", authState.refresh_token)
   );
 
   watchEffect(() =>
-    localStorage.setItem("expires_at", JSON.stringify(auth.value.expires_at))
+    localStorage.setItem("expires_at", JSON.stringify(authState.expires_at))
   );
 
-  return { authenticate, isLoggedIn, isValidAuth };
+  return {
+    authenticate,
+    unauthenticate,
+    isLoggedIn,
+    isValidAuth,
+    ...toRefs(authState),
+  };
 }

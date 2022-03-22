@@ -1,5 +1,5 @@
 <template>
-  <section class="login-form mt-10 mx-auto w-full">
+  <section class="login-form text-center mt-10 mx-auto w-full">
     <h3 class="text-3xl mb-5">Welcome</h3>
     <p class="text-black-400 mb-3">
       Already have an existing account?

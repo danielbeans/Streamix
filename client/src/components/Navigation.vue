@@ -32,8 +32,6 @@ import { computed } from "@vue/reactivity";
 import { useRoute } from "vue-router";
 import useAuth from "../composables/use-auth";
 const route = useRoute();
-
+const { isLoggedIn } = useAuth();
 const activeIndex = computed(() => (route.name as string)?.toLowerCase());
-
-const { setAuth, isLoggedIn, auth } = useAuth({ token: "" });
 </script>
