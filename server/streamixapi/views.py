@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from .controllers import AuthController
 from pymongo.errors import DuplicateKeyError, InvalidName
+from jwt.exceptions import DecodeError
 
 
 class AuthUser(APIView):
@@ -26,4 +27,21 @@ class SignupUser(APIView):
             return Response(f'Key {str(e)} not found', status=status.HTTP_400_BAD_REQUEST)
         except DuplicateKeyError as e:
             return Response('User already exists', status=status.HTTP_400_BAD_REQUEST)
+        return res
+
+
+class TokenObtain(APIView):
+    def post(self, request):
+        req_data = request.data
+        res = AuthController.obtain_jwt(req_data)
+        return res
+
+
+class TokenVerify(APIView):
+    def post(self, request):
+        req_data = request.data
+        try:
+            res = AuthController.verify_jwt(req_data)
+        except DecodeError as e:
+            return Response(f'JWT Invalid', status=status.HTTP_401_UNAUTHORIZED)
         return res
