@@ -33,8 +33,10 @@ export default function useForm<T>(
   const form = ref(formState);
   const { run, data, status } = useAxios(requestConfig);
 
-  const resetForm = () =>
-    Object.keys(form.value).forEach((i) => (form.value[i] = ``));
+  const resetForm = () => {
+    Object.keys(form.value).forEach((key) => (form.value[key] = ``));
+    Object.keys(errors).forEach((key) => delete errors[key]);
+  };
 
   const validateFormData = () => {
     if (validationRules === null) return;
@@ -64,7 +66,11 @@ export default function useForm<T>(
   watch(
     form,
     () => {
-      validateFormData();
+      const hasData = Object.entries(form.value).reduce(
+        (acc, cur) => acc || cur[1].length > 0,
+        false
+      );
+      if (hasData) validateFormData();
     },
     { deep: true }
   );

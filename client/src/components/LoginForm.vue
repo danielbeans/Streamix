@@ -13,8 +13,8 @@
       <el-input
         type="text"
         size="large"
-        v-model="form.email"
-        placeholder="Email"
+        v-model="form.username"
+        placeholder="Username"
         class="my-2"
       />
       <div
@@ -45,48 +45,94 @@
         >
         <span class="absolute top-0 bottom-0 right-0 px-4 py-3"> </span>
       </div>
-      <div class="mt-4 flex flex-wrap lg:flex-nowrap">
+      <div class="mt-4 flex flex-wrap w-full lg:flex-nowrap">
         <el-button
           size="large"
           @click="submitForm"
-          class="w-full mb-5 lg:w-1/2"
+          :loading="status === FetchStatus.RUNNING"
+          class="mb-5 w-full lg:flex-1 lg:mr-3"
           type="primary"
           >Login</el-button
         >
         <el-button
           @click="resetForm"
           size="large"
-          class="w-full lg:w-1/2 mx-0 lg:mx-3"
+          class="w-full lg:flex-1 lg:ml-3"
           type="danger"
           >Clear
         </el-button>
       </div>
     </div>
+    <dialog :open="dialogVisible" class="text-left">
+      <el-dialog :show-close="false" v-model="dialogVisible" width="30%">
+        <template #title
+          ><div class="text-xl pb-5 border-b-2 border-gray-200">
+            {{ dialogInfo.title }}
+          </div></template
+        >
+        <span>{{ dialogInfo.message }}</span>
+        <template #footer>
+          <el-button type="primary" class="px-8" @click="dialogInfo.action">{{
+            dialogInfo.button
+          }}</el-button>
+        </template>
+      </el-dialog>
+    </dialog>
   </section>
 </template>
 
+<style lang="scss">
+.el-dialog__body {
+  padding-top: 0 !important;
+}
+</style>
 <script lang="ts" setup>
 import useForm, { ValidationRules } from "../composables/use-form";
 import validator from "validator";
+import { FetchStatus } from "../enum/status.enum";
+import useDialog from "../composables/use-dialog";
+import { useRouter } from "vue-router";
 
 interface LoginForm {
   email: string;
   password: string;
 }
 
+const router = useRouter();
+
 const validatorRules: ValidationRules = {
-  email: (value: string, options = {}) =>
-    validator.isEmail(value, options as validator.IsEmailOptions),
+  username: (value: string, options = {}) =>
+    validator.isAlphanumeric(
+      value,
+      `en-US`,
+      options as validator.IsAlphanumericOptions
+    ),
   password: (value: string, options = { min: 8 }) =>
     validator.isLength(value, options as validator.IsLengthOptions),
 };
 
-const { resetForm, submitForm, form, errors, data } = useForm<LoginForm>(
-  { email: ``, password: `` },
-  validatorRules,
+const { resetForm, submitForm, form, errors, data, status } =
+  useForm<LoginForm>({ username: ``, password: `` }, validatorRules, {
+    url: `/api/auth/login`,
+    method: `POST`,
+  });
+
+const { dialogInfo, dialogVisible } = useDialog(
+  status,
   {
-    url: `/api/login`,
-    method: `post`,
+    title: `Success`,
+    message: `You have successfully logged in. Please press Ok to continue to the dashboard.`,
+    button: `Ok`,
+    action: () => router.push(`/dashboard`),
+  },
+  {
+    title: `Error`,
+    message: `There was an error logging you in. Please check your credentials and try again.`,
+    button: `Try again`,
+    action: () => {
+      resetForm();
+      dialogVisible.value = false;
+    },
   }
 );
 </script>

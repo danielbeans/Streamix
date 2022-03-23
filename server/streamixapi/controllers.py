@@ -10,7 +10,7 @@ class AuthController():
             'password': req['password']
         }
         if authenticate_user(user):
-            return Response(f'User \'{user["username"]}\' successfully authenticated', status=status.HTTP_202_ACCEPTED)
+            return Response(f'User \'{user["username"]}\' successfully authenticated', status=status.HTTP_200_OK)
         else:
             return Response(f'User \'{user["username"]}\' could not be authenticated', status=status.HTTP_401_UNAUTHORIZED)
 
@@ -22,6 +22,6 @@ class AuthController():
             'password': req['password']
         }
         if signup_user(user):
-            return Response(f'User \'{user["username"]}\' successfully signed up', status=status.HTTP_202_ACCEPTED)
+            return Response(f'User \'{user["username"]}\' successfully signed up', status=status.HTTP_201_CREATED)
         else:
             return Response(f'User \'{user["username"]}\' could not be signed up', status=status.HTTP_401_UNAUTHORIZED)

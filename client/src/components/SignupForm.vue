@@ -11,23 +11,13 @@
     </p>
 
     <div class="flex flex-col md:w-1/2 xl:w-1/3 mx-8 md:mx-auto">
-      <div class="flex">
-        <el-input
-          type="text"
-          size="large"
-          v-model="form.firstName"
-          placeholder="First Name"
-          class="mr-4 my-2"
-        />
-
-        <el-input
-          type="text"
-          size="large"
-          v-model="form.lastName"
-          placeholder="Last Name"
-          class="my-2"
-        />
-      </div>
+      <el-input
+        type="text"
+        size="large"
+        v-model="form.name"
+        placeholder="First Name"
+        class="mr-4 my-2"
+      />
 
       <el-input
         type="text"
@@ -120,29 +110,49 @@
         <span class="absolute top-0 bottom-0 right-0 px-4 py-3"> </span>
       </div>
 
-      <div class="mt-4 flex flex-wrap lg:flex-nowrap">
+      <div class="mt-4 flex flex-wrap w-full lg:flex-nowrap">
         <el-button
           size="large"
           @click="submitForm"
-          class="w-full mb-5 lg:w-1/2"
+          :loading="status === FetchStatus.RUNNING"
+          class="mb-5 w-full lg:flex-1 lg:mr-3"
           type="primary"
           >Signup</el-button
         >
+
         <el-button
           @click="resetForm"
           size="large"
-          class="w-full lg:w-1/2 mx-0 lg:mx-3"
+          class="w-full lg:flex-1 lg:ml-3"
           type="danger"
           >Clear</el-button
         >
       </div>
     </div>
+    <dialog :open="dialogVisible" class="text-left">
+      <el-dialog :show-close="false" v-model="dialogVisible" width="30%">
+        <template #title
+          ><div class="text-xl pb-5 border-b-2 border-gray-200">
+            {{ dialogInfo.title }}
+          </div></template
+        >
+        <span class="pt-0">{{ dialogInfo.message }}</span>
+        <template #footer>
+          <el-button type="primary" class="px-8" @click="dialogInfo.action">{{
+            dialogInfo.button
+          }}</el-button>
+        </template>
+      </el-dialog>
+    </dialog>
   </section>
 </template>
 <script lang="ts" setup>
 import useForm, { ValidationRules } from "../composables/use-form";
 import validator from "validator";
 import { ref, watch } from "vue";
+import { FetchStatus } from "../enum/status.enum";
+import useDialog from "../composables/use-dialog";
+import { useRouter } from "vue-router";
 
 interface SignupForm {
   firstName: string;
@@ -152,6 +162,8 @@ interface SignupForm {
   confirmPassword: string;
 }
 
+const router = useRouter();
+
 const validatorRules: ValidationRules = {
   username: (value: string, options = {}) =>
     validator.isAlphanumeric(
@@ -159,10 +171,12 @@ const validatorRules: ValidationRules = {
       `en-US`,
       options as validator.IsAlphanumericOptions
     ),
-  firstName: (value: string, options = {}) =>
-    validator.isAlpha(value, `en-US`, options as validator.IsAlphaOptions),
-  lastName: (value: string, options = {}) =>
-    validator.isAlpha(value, `en-US`, options as validator.IsAlphaOptions),
+  name: (value: string, options = { ignore: ` ` }) =>
+    validator.isAlpha(
+      value,
+      `en-US`,
+      options as validator.IsAlphanumericOptions
+    ),
   email: (value: string, options = {}) =>
     validator.isEmail(value, options as validator.IsEmailOptions),
   password: (value: string, options = { min: 8 }) =>
@@ -174,17 +188,36 @@ const validatorRules: ValidationRules = {
 const { resetForm, submitForm, form, errors, data, status } =
   useForm<SignupForm>(
     {
-      firstName: ``,
-      lastName: ``,
+      name: ``,
+      username: ``,
       email: ``,
       password: ``,
       confirmPassword: ``,
     },
     validatorRules,
-    { url: `/api/signup`, method: `post` }
+    { url: `/api/auth/signup`, method: `POST` }
   );
 
 const passwordsMatch = ref(true);
+
+const { dialogInfo, dialogVisible } = useDialog(
+  status,
+  {
+    title: `Success`,
+    message: `Your account has been created successfully. Please press Ok to continue to the dashboard.`,
+    button: `Ok`,
+    action: () => router.push(`/dashboard`),
+  },
+  {
+    title: `Error`,
+    message: `There was an error logging you in. Please check your credentials and try again.`,
+    button: `Try again`,
+    action: () => {
+      resetForm();
+      dialogVisible.value = false;
+    },
+  }
+);
 
 watch(
   form,
@@ -193,3 +226,9 @@ watch(
   { deep: true }
 );
 </script>
+
+<style lang="scss">
+.el-button + .el-button {
+  margin-left: 0 !important;
+}
+</style>
