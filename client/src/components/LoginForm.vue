@@ -9,7 +9,7 @@
         >Sign up.</router-link
       >
     </p>
-    <div class="flex flex-col lg:w-1/4 md:w-1/2 mx-8 md:mx-auto">
+    <div class="flex flex-col md:w-1/2 xl:w-1/3 mx-8 md:mx-auto">
       <el-input
         type="text"
         size="large"
@@ -64,7 +64,7 @@
       </div>
     </div>
     <dialog :open="dialogVisible" class="text-left">
-      <el-dialog :show-close="false" v-model="dialogVisible" width="30%">
+      <el-dialog :show-close="false" v-model="dialogVisible">
         <template #title
           ><div class="text-xl pb-5 border-b-2 border-gray-200">
             {{ dialogInfo.title }}
@@ -92,6 +92,8 @@ import validator from "validator";
 import { FetchStatus } from "../enum/status.enum";
 import useDialog from "../composables/use-dialog";
 import { useRouter } from "vue-router";
+import useAuth, { AuthObject } from "../composables/use-auth";
+import { watchEffect } from "vue";
 
 interface LoginForm {
   email: string;
@@ -99,6 +101,7 @@ interface LoginForm {
 }
 
 const router = useRouter();
+const { setAccessToken } = useAuth();
 
 const validatorRules: ValidationRules = {
   username: (value: string, options = {}) =>
@@ -111,11 +114,18 @@ const validatorRules: ValidationRules = {
     validator.isLength(value, options as validator.IsLengthOptions),
 };
 
-const { resetForm, submitForm, form, errors, data, status } =
-  useForm<LoginForm>({ username: ``, password: `` }, validatorRules, {
-    url: `/api/auth/login`,
-    method: `POST`,
-  });
+const { resetForm, submitForm, form, errors, data, status } = useForm<
+  LoginForm,
+  AuthObject
+>({ username: ``, password: `` }, validatorRules, {
+  url: `/api/auth/login`,
+  method: `POST`,
+});
+
+watchEffect(() => {
+  if (status.value === FetchStatus.SUCCESS)
+    setAccessToken((data.value as AuthObject)?.access_token);
+});
 
 const { dialogInfo, dialogVisible } = useDialog(
   status,

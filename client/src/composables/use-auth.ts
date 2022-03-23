@@ -1,22 +1,41 @@
-import { computed, reactive, toRefs, watchEffect } from "vue";
+import { computed, reactive, toRefs, watch, watchEffect } from "vue";
 import useAxios from "./use-axios";
+import { onMounted } from "@vue/runtime-core";
 export interface AuthObject {
-  refresh_token: string;
   access_token: string;
-  expires_at: number;
+}
+
+export interface JWTObject {
+  readonly id: string;
+  readonly name: string;
+  readonly username: string;
+  readonly email: string;
+  readonly exp: number;
 }
 
 const authState = reactive<AuthObject>({
-  refresh_token: localStorage.getItem("access_token") ?? ``,
-  access_token: localStorage.getItem("refresh_token") ?? ``,
-  expires_at: parseInt(localStorage.getItem("expires_at") ?? `0`),
+  access_token: localStorage.getItem("access_token") ?? ``,
+});
+
+const jwt = reactive<JWTObject>({
+  id: ``,
+  name: ``,
+  username: ``,
+  email: ``,
+  exp: 0,
 });
 
 export default function useAuth() {
   const initialAuthState = reactive<AuthObject>({
-    refresh_token: ``,
     access_token: ``,
-    expires_at: 0,
+  });
+
+  const intialJWT = reactive<JWTObject>({
+    id: ``,
+    name: ``,
+    username: ``,
+    email: ``,
+    exp: 0,
   });
 
   const { run, data, status } = useAxios<AuthObject>({
@@ -28,24 +47,18 @@ export default function useAuth() {
     data: authState,
   });
 
-  const isNotExpired = computed(() => authState.expires_at < Date.now());
+  const isNotExpired = computed(() => jwt.exp < Date.now());
 
   const isValidAuth = computed(
-    () =>
-      authState.refresh_token && authState.access_token && isNotExpired.value
+    () => authState.access_token && jwt.id && isNotExpired
   );
 
   const isLoggedIn = computed(() => !!isValidAuth.value);
 
   const authenticate = async () => {
-    if (isLoggedIn.value) return false;
+    if (isLoggedIn.value && isValidAuth.value) return false;
     try {
-      // await run();
-      data.value = {
-        refresh_token: "refresh",
-        access_token: "access",
-        expires_at: 5,
-      };
+      await run();
       if (data.value !== null) Object.assign(authState, data.value); // ! Remember to check status for success
       return true;
     } catch (e: unknown) {
@@ -54,25 +67,41 @@ export default function useAuth() {
     }
   };
 
-  const unauthenticate = () => Object.assign(authState, initialAuthState);
+  const unauthenticate = () => {
+    Object.assign(authState, initialAuthState);
+    Object.assign(jwt, intialJWT);
+  };
 
-  watchEffect(() =>
-    localStorage.setItem("access_token", authState.access_token)
-  );
+  const setAccessToken = (accessToken: string) => {
+    console.log(accessToken);
+    authState.access_token = accessToken;
+  };
 
-  watchEffect(() =>
-    localStorage.setItem("refresh_token", authState.refresh_token)
-  );
+  const decodeJWT = (token: string): JWTObject | null => {
+    try {
+      return JSON.parse(atob(token.split(`.`)[1]));
+    } catch (e) {
+      return null;
+    }
+  };
 
-  watchEffect(() =>
-    localStorage.setItem("expires_at", JSON.stringify(authState.expires_at))
-  );
+  watch(authState, () => {
+    localStorage.setItem("access_token", authState.access_token);
+    Object.assign(jwt, decodeJWT(authState.access_token));
+  });
+
+  onMounted(() => {
+    authState.access_token &&
+      Object.assign(jwt, decodeJWT(authState.access_token));
+  });
 
   return {
     authenticate,
     unauthenticate,
     isLoggedIn,
     isValidAuth,
+    setAccessToken,
     ...toRefs(authState),
+    ...toRefs(jwt),
   };
 }

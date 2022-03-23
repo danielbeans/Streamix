@@ -23,7 +23,7 @@ export interface ValidationRules {
   [key: string]: ValidatorFunction;
 }
 
-export default function useForm<T>(
+export default function useForm<T, V>(
   formState: FormState<T>,
   validationRules: ValidationRules | null = null,
   requestConfig: AxiosRequestConfig
@@ -31,7 +31,7 @@ export default function useForm<T>(
   const valid = ref(false);
   const errors = reactive({} as FormErrors);
   const form = ref(formState);
-  const { run, data, status } = useAxios(requestConfig);
+  const { run, data, status } = useAxios<V>(requestConfig);
 
   const resetForm = () => {
     Object.keys(form.value).forEach((key) => (form.value[key] = ``));

@@ -8,8 +8,11 @@
       >Unauthenticate</el-button
     >
     <h3 class="text-xl my-3">Access: {{ access_token }}</h3>
-    <h3 class="text-xl my-3">Refresh: {{ refresh_token }}</h3>
-    <h3 class="text-xl my-3">Expires: {{ expires_at }}</h3>
+    <h3 class="text-xl my-3">Id: {{ id }}</h3>
+    <h3 class="text-xl my-3">Name: {{ name }}</h3>
+    <h3 class="text-xl my-3">Username: {{ username }}</h3>
+    <h3 class="text-xl my-3">Email: {{ email }}</h3>
+    <h3 class="text-xl my-3">Expires: {{ exp }}</h3>
     <div>Is Logged In: {{ isLoggedIn }}</div>
   </section>
 </template>

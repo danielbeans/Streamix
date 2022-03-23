@@ -38,10 +38,13 @@ class TokenObtain(APIView):
 
 
 class TokenVerify(APIView):
-    def post(self, request):
-        req_data = request.data
+    def get(self, request):
+        PREFIX = 'Bearer '
+        authHeader: str = request.headers['Authorization']
         try:
-            res = AuthController.verify_jwt(req_data)
-        except DecodeError as e:
+            if not authHeader.startswith(PREFIX):
+                raise DecodeError()
+            res = AuthController.verify_jwt(authHeader[len(PREFIX):])
+        except DecodeError:
             return Response(f'JWT Invalid', status=status.HTTP_401_UNAUTHORIZED)
         return res

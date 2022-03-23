@@ -130,7 +130,7 @@
       </div>
     </div>
     <dialog :open="dialogVisible" class="text-left">
-      <el-dialog :show-close="false" v-model="dialogVisible" width="30%">
+      <el-dialog :show-close="false" v-model="dialogVisible">
         <template #title
           ><div class="text-xl pb-5 border-b-2 border-gray-200">
             {{ dialogInfo.title }}
