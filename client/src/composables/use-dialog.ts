@@ -20,6 +20,7 @@ export default function useDialog(
     button: ``,
     action: () => void 0,
   });
+
   watchEffect(() => {
     if (status.value === FetchStatus.SUCCESS)
       Object.assign(dialogInfo, successInfo);
@@ -31,5 +32,6 @@ export default function useDialog(
     dialogVisible.value =
       newStatus === FetchStatus.SUCCESS || newStatus === FetchStatus.ERROR;
   });
+
   return { dialogVisible, dialogInfo };
 }

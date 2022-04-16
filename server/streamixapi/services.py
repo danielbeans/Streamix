@@ -2,12 +2,11 @@ from hashlib import algorithms_available
 from django.contrib.auth.hashers import make_password, check_password
 from utils import db_connector
 from pymongo.errors import DuplicateKeyError, InvalidName
+from jwt.exceptions import DecodeError
 from datetime import datetime, timedelta
 from bson import ObjectId
 import jwt
 import environ
-import random
-import string
 
 
 def authenticate_user(user: dict):
@@ -49,7 +48,27 @@ def create_jwt(user: dict):
     access_token_exp = (datetime.now() + timedelta(days=1)
                         ).strftime('%m%d%Y%H%M%S')
 
-    access_token = jwt.encode({'id': str(found_user['_id']), 'username': found_user['username'], 'name': found_user['name'], 'email': found_user['email'], 'exp': access_token_exp}, env(
-        'SECRET_KEY'), algorithm='HS256')
+    access_token = jwt.encode({'id': str(found_user['_id']), 
+                               'username': found_user['username'], 
+                               'name': found_user['name'], 
+                               'email': found_user['email'], 
+                               'exp': access_token_exp,
+                               'hasSpotifyAuth': True, # ! fetch access token from DB and check if valid
+                               'hasYoutubeAuth': False # ! fetch access token from DB and check if valid
+                               }, 
+                              env('SECRET_KEY'), algorithm='HS256')
 
     return {'access_token': access_token}
+
+def update_user(user: dict, info: dict):
+    db_users = db_connector.db_handle['Users']
+
+    db_users.update_one({'username': user['username']}, {'$set': info})
+
+def validate_jwt_syntax(req: dict):
+    PREFIX = 'Bearer '
+    authHeader: str = req.headers['Authorization']
+    
+    if not authHeader.startswith(PREFIX):
+        raise DecodeError()
+    return authHeader[len(PREFIX):]

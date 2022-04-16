@@ -11,6 +11,8 @@ export interface JWTObject {
   readonly username: string;
   readonly email: string;
   readonly exp: number;
+  readonly hasSpotifyAuth: boolean;
+  readonly hasYoutubeAuth: boolean;
 }
 
 const authState = reactive<AuthObject>({
@@ -22,6 +24,8 @@ const jwt = reactive<JWTObject>({
   name: ``,
   username: ``,
   email: ``,
+  hasSpotifyAuth: false,
+  hasYoutubeAuth: false,
   exp: 0,
 });
 
@@ -35,6 +39,8 @@ export default function useAuth() {
     name: ``,
     username: ``,
     email: ``,
+    hasSpotifyAuth: false,
+    hasYoutubeAuth: false,
     exp: 0,
   });
 

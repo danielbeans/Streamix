@@ -11,17 +11,19 @@
       menu
     >
       <template v-if="isLoggedIn">
-        <el-menu-item class="ml-auto" index="dashboard">Dashboard</el-menu-item>
+        <el-menu-item class="ml-auto" index="/dashboard"
+          >Dashboard</el-menu-item
+        >
         <el-sub-menu index="sub-menu"
           ><template #title>Playlists</template>
-          <el-menu-item index="playlists">My Playlists</el-menu-item>
-          <el-menu-item index="migrate">Migrate</el-menu-item>
-          <el-menu-item index="party">Create/Join Playlist Party</el-menu-item>
+          <el-menu-item index="/playlists">My Playlists</el-menu-item>
+          <el-menu-item index="/migrate">Migrate</el-menu-item>
+          <el-menu-item index="/party">Create/Join Playlist Party</el-menu-item>
         </el-sub-menu></template
       >
       <template v-if="!isLoggedIn">
-        <el-menu-item class="ml-auto" index="login">Log in</el-menu-item>
-        <el-menu-item index="signup">Sign up</el-menu-item>
+        <el-menu-item class="ml-auto" index="/login">Log in</el-menu-item>
+        <el-menu-item index="/signup">Sign up</el-menu-item>
       </template>
     </el-menu>
   </nav>

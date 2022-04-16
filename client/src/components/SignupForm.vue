@@ -153,6 +153,7 @@ import { ref, watch } from "vue";
 import { FetchStatus } from "../enum/status.enum";
 import useDialog from "../composables/use-dialog";
 import { useRouter } from "vue-router";
+import { AuthObject } from "../composables/use-auth";
 
 interface SignupForm {
   firstName: string;
@@ -185,18 +186,20 @@ const validatorRules: ValidationRules = {
     validator.isLength(value, options as validator.IsLengthOptions),
 };
 
-const { resetForm, submitForm, form, errors, data, status } =
-  useForm<SignupForm>(
-    {
-      name: ``,
-      username: ``,
-      email: ``,
-      password: ``,
-      confirmPassword: ``,
-    },
-    validatorRules,
-    { url: `/api/auth/signup`, method: `POST` }
-  );
+const { resetForm, submitForm, form, errors, data, status } = useForm<
+  SignupForm,
+  AuthObject
+>(
+  {
+    name: ``,
+    username: ``,
+    email: ``,
+    password: ``,
+    confirmPassword: ``,
+  },
+  validatorRules,
+  { url: `/api/auth/signup`, method: `POST` }
+);
 
 const passwordsMatch = ref(true);
 
