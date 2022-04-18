@@ -11,7 +11,12 @@ urlpatterns = [
     # Spotify auth routes
     re_path(r'auth\/spotify\/?$', views.SpotifyAuth.as_view()),
     re_path(r'auth\/spotify\/callback\/$', views.SpotifyCallback.as_view()),
+    # Spotify CRUD routes
+    re_path(r'spotify\/get-user\/$', views.SpotifyUser.as_view()),
+    re_path(r'spotify\/get-playlists\/$', views.SpotifyPlaylists.as_view()),
+
     # Youtube auth routes
     # re_path(r'auth\/youtube\/?$', views.SpotifyAuth.as_view()),
     # re_path(r'auth\/youtube\/callback\/$', views.SpotifyCallback.as_view()),
+
 ]

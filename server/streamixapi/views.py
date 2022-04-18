@@ -1,12 +1,15 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from .controllers import AuthController
+
+from .utils import GRANT_TYPE
+from .controllers import *
 from .services import validate_jwt_syntax
 from pymongo.errors import DuplicateKeyError, InvalidName
 from jwt.exceptions import DecodeError
 from django.shortcuts import redirect
 from urllib import parse
+from django.core.cache import cache
 
 
 class AuthUser(APIView):
@@ -32,11 +35,13 @@ class SignupUser(APIView):
             return Response('User already exists', status=status.HTTP_400_BAD_REQUEST)
         return res
 
+
 class TokenObtain(APIView):
     def post(self, request):
         req_data = request.data
         res = AuthController.obtain_jwt(req_data)
         return res
+
 
 class TokenVerify(APIView):
     def get(self, request):
@@ -45,20 +50,34 @@ class TokenVerify(APIView):
         except DecodeError:
             return Response(f'JWT Invalid', status=status.HTTP_401_UNAUTHORIZED)
 
+
 class SpotifyAuth(APIView):
     def get(self, request):
         try:
-            res = AuthController.get_spotify_auth_code('validate_jwt_syntax(request)') # !! Change back
+            res = SpotifyController.get_auth_code(
+                validate_jwt_syntax(request))
             return redirect('https://accounts.spotify.com/authorize?' + parse.urlencode(res))
         except DecodeError:
             return Response(f'JWT Invalid', status=status.HTTP_401_UNAUTHORIZED)
 
+
 class SpotifyCallback(APIView):
     def get(self, request):
-        auth_code = request.GET.get('code', '')
         try:
-            res = AuthController.get_spotify_tokens(auth_code)
-            return redirect('http://localhost:3000/dashboard')
+            auth_code = request.GET.get('code', '')
+            res = SpotifyController.get_tokens(
+                auth_code, GRANT_TYPE.authorization_code.name)
+            return redirect('http://localhost:3000/dashboard?' + res)
         except:
-            return redirect('http://localhost:3000/login')
-            
+            return redirect('http://localhost:3000/dashboard?error=1')
+
+
+# !! TODO Add exceptions
+class SpotifyUser(APIView):
+    def get(self, request):
+        return SpotifyController.get_user(validate_jwt_syntax(request))
+
+
+class SpotifyPlaylists(APIView):
+    def get(self, request):
+        return SpotifyController.get_playlists(validate_jwt_syntax(request))
