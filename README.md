@@ -53,6 +53,7 @@ pip install -r requirements.txt
 To start the server, make sure the `venv` is running, go into the `server/` directory, and start the server:
 
 ```bash
+cd server
 python manage.py runserver
 ```
 

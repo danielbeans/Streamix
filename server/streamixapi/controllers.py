@@ -179,6 +179,7 @@ class SpotifyController():
 
 
 class YoutubeController():
+        
     def get_auth_code(token: str):
         global env
         if authenticate_user({'Authorization': token}):
@@ -227,6 +228,16 @@ class YoutubeController():
                 youtube.playlists().list(part='snippet', mine=True).execute())
             return Response(json.loads(playlists), status=status.HTTP_200_OK)
         return Response(f'Authentication unsuccessful', status=status.HTTP_401_UNAUTHORIZED)
+    
+    def get_playlist_tracks(token: str, playlist_id:str):
+        global env, db_users
+        if authenticate_user({'Authorization': token}):
+            user = decode_jwt(token)
+            youtube = build_youtube_service(user)
+            playlistItems = json.dumps(
+                youtube.playlistItems().list(part='snippet', playlistId=playlist_id, maxResults="50").execute())
+            return Response(json.loads(playlistItems), status=status.HTTP_200_OK)
+        return Response(f'Authentication unsuccessful', status=status.HTTP_401_UNAUTHORIZED)
 
 
 # ! No error handling for when json format is wrong
@@ -247,6 +258,7 @@ class PlaylistController():
                     cache.set('headers', headers)
                     res = requests.post(
                         f'{SPOTIFY_API_URI}/users/{user_id}/playlists', headers=headers, data=playlist_name).json()
+                    print(res)
                     playlist_id = res['id']
                     track_uris, track_names = search_for_spotify_tracks(
                         data['tracks'])

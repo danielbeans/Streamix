@@ -96,7 +96,7 @@
 <script setup lang="ts">
 import useViewport from "../composables/use-viewport";
 import { MigrationTypes } from "../enum/migration.enum";
-import { ref } from "vue";
+import { ref, watchEffect } from "vue";
 import useAuth from "../composables/use-auth";
 import { capitalizeWord } from "../helpers/capitalize-word";
 
@@ -113,7 +113,6 @@ interface Props {
 
 const { hasSpotifyAuth, hasYoutubeAuth, access_token } = useAuth();
 const { items, migration } = defineProps<Props>();
-
 const type = migration[0];
 const { viewportSize } = useViewport();
 </script>

@@ -116,6 +116,10 @@ class YoutubePlaylists(APIView):
     def get(self, request):
         return YoutubeController.get_playlists(validate_jwt_syntax(request))
 
+class YoutubeTracks(APIView):
+    def post(self, request):
+        return YoutubeController.get_playlist_tracks(validate_jwt_syntax(request), request.data["playlist_id"])
+
 
 class PlaylistCreate(APIView):
     def post(self, request, to_platform=None):

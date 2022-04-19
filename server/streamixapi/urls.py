@@ -19,6 +19,7 @@ urlpatterns = [
     # Youtube auth routes
     re_path(r'auth\/youtube\/?$', views.YoutubeAuth.as_view()),
     re_path(r'auth\/youtube\/callback\/$', views.YoutubeCallback.as_view()),
+    re_path(r'youtube\/tracks\/$', views.YoutubeTracks.as_view()),
     # Youtube CRUD routes
     re_path(r'youtube\/playlists\/$', views.YoutubePlaylists.as_view()),
     # Migration route

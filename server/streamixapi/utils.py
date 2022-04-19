@@ -39,9 +39,8 @@ def update_user(user: dict, info: dict):
 
 def get_user_data(user: dict, data: str = ''):
     global db_users
-    if len(data) != 0:
-        return db_users.find_one({'username': user['username']})[data]
-    return db_users.find_one({'username': user['username']})
+    temp = db_users.find_one({'username': user['username']})
+    return temp[data] if data in temp else temp
 
 
 def credentials_to_dict(credentials):
@@ -61,6 +60,7 @@ def credentials_to_dict(credentials):
 # Creates a service object to use to query YouTube API
 def build_youtube_service(user: dict):
     youtube_auth = get_user_data(user, 'youtube_auth')
+    print(youtube_auth)
     credentials = google.oauth2.credentials.Credentials(
         youtube_auth['token'],
         refresh_token=youtube_auth['refresh_token'],

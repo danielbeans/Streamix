@@ -33,30 +33,37 @@ export default defineComponent({
   setup(props, ctx) {
     const { spotify_authenticated } = useRoute().query ?? false;
     const { youtube_authenticated } = useRoute().query ?? false;
+    const noAuth = !spotify_authenticated && !youtube_authenticated;
     const auth = useAuth(spotify_authenticated || youtube_authenticated);
     if (spotify_authenticated || youtube_authenticated) auth.authenticate();
-    const youtubeRequest = useAxios(
-      {
-        method: "get",
-        headers: { Authorization: `Bearer ${auth.access_token.value}` },
-        url: `/api/youtube/playlists`,
-      },
-      true
-    );
-    const spotifyRequest = useAxios(
-      {
-        method: "get",
-        headers: {
-          Authorization: `Bearer ${auth.access_token.value}`,
-        },
-        url: `/api/spotify/playlists`,
-      },
-      true
-    );
+    const youtubeRequest =
+      youtube_authenticated ||
+      (noAuth &&
+        useAxios(
+          {
+            method: "get",
+            headers: { Authorization: `Bearer ${auth.access_token.value}` },
+            url: `/api/youtube/playlists`,
+          },
+          true
+        ));
+    const spotifyRequest =
+      spotify_authenticated ||
+      (noAuth &&
+        useAxios(
+          {
+            method: "get",
+            headers: {
+              Authorization: `Bearer ${auth.access_token.value}`,
+            },
+            url: `/api/spotify/playlists`,
+          },
+          true
+        ));
     return {
       ...auth,
-      youtubePlaylists: youtubeRequest.data,
-      spotifyPlaylists: spotifyRequest.data,
+      youtubePlaylists: youtubeRequest?.data ?? { items: [] },
+      spotifyPlaylists: spotifyRequest?.data ?? { items: [] },
       MigrationTypes,
     };
   },
