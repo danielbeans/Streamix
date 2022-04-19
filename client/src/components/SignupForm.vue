@@ -205,6 +205,7 @@ const passwordsMatch = ref(true);
 
 const { dialogInfo, dialogVisible } = useDialog(
   status,
+  data,
   {
     title: `Success`,
     message: `Your account has been created successfully. Please press Ok to continue to the dashboard.`,
@@ -213,7 +214,7 @@ const { dialogInfo, dialogVisible } = useDialog(
   },
   {
     title: `Error`,
-    message: `There was an error logging you in. Please check your credentials and try again.`,
+    message: `There was an error signing you up. Please check the information entered and try again.`,
     button: `Try again`,
     action: () => {
       resetForm();

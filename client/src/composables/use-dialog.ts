@@ -3,13 +3,14 @@ import { FetchStatus } from "../enum/status.enum";
 
 interface DialogInfo {
   readonly title: string;
-  readonly message: string;
+  message: string;
   readonly button: string;
   readonly action: () => void;
 }
 
-export default function useDialog(
+export default function useDialog<T>(
   status: Ref<FetchStatus>,
+  data: Ref<T>,
   successInfo: DialogInfo,
   errorInfo: DialogInfo
 ) {
@@ -24,8 +25,10 @@ export default function useDialog(
   watchEffect(() => {
     if (status.value === FetchStatus.SUCCESS)
       Object.assign(dialogInfo, successInfo);
-    else if (status.value === FetchStatus.ERROR)
+    else if (status.value === FetchStatus.ERROR) {
+      // errorInfo.message = data.value.message;
       Object.assign(dialogInfo, errorInfo);
+    }
   });
 
   watch(status, (newStatus) => {

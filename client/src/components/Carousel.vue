@@ -1,10 +1,10 @@
 <template>
-  <section class="carousel" v-if="items && viewportSize != null">
+  <section class="carousel" v-if="items?.items && viewportSize != null">
     <div v-if="type === MigrationTypes.SPOTIFY">
       <div v-if="!hasSpotifyAuth" class="flex">
         <a
           class="mx-auto"
-          :href="`http://localhost:8000/api/auth/${migration[0].toLowerCase()}`"
+          :href="`http://localhost:8000/api/auth/${migration[0].toLowerCase()}?access_token=${access_token}`"
         >
           <el-button class="mx-auto">
             Grant {{ capitalizeWord(migration[0]) }} Access to
@@ -12,15 +12,10 @@
           >
         </a>
       </div>
-      <el-carousel
-        v-else
-        :type="viewportSize > 1100 && `card`"
-        :autoplay="false"
-        height="500px"
-      >
-        <el-carousel-item v-for="item in items" :key="item.id">
+      <el-carousel v-else :autoplay="false" height="650px">
+        <el-carousel-item v-for="item in items.items" :key="item.id">
           <div class="mx-auto w-full">
-            <h3 class="text-xl mb-4 text-center">{{ item.title }}</h3>
+            <h3 class="text-xl mb-4 text-center">{{ item.name }}</h3>
             <router-link
               :to="{
                 path: `/migrate/${item.id}`,
@@ -33,7 +28,7 @@
               </el-button>
             </router-link>
             <div class="flex justify-center items-center">
-              <img :src="item.src" :key="item.src" />
+              <img :src="item.images[0]?.url" :key="item.src" />
             </div>
           </div>
         </el-carousel-item>
@@ -43,7 +38,7 @@
       <div v-if="!hasYoutubeAuth" class="flex">
         <a
           class="mx-auto"
-          :href="`http://localhost:8000/api/auth/${migration[0].toLowerCase()}`"
+          :href="`http://localhost:8000/api/auth/${migration[0].toLowerCase()}?access_token=${access_token}`"
         >
           <el-button>
             Grant {{ capitalizeWord(migration[0]) }} Access to
@@ -51,15 +46,10 @@
           >
         </a>
       </div>
-      <el-carousel
-        v-else
-        :type="viewportSize > 1100 && `card`"
-        :autoplay="false"
-        height="500px"
-      >
-        <el-carousel-item v-for="item in items" :key="item.id">
+      <el-carousel v-else :autoplay="false" height="480px">
+        <el-carousel-item v-for="item in items.items" :key="item.id">
           <div class="mx-auto w-full">
-            <h3 class="text-xl mb-4 text-center">{{ item.title }}</h3>
+            <h3 class="text-xl mb-4 text-center">{{ item.snippet.title }}</h3>
             <router-link
               :to="{
                 path: `/migrate/${item.id}`,
@@ -72,19 +62,17 @@
               </el-button>
             </router-link>
             <div class="flex justify-center items-center">
-              <img :src="item.src" :key="item.src" />
+              <img
+                :src="item.snippet.thumbnails.high?.url"
+                :key="item.snippet.thumbnails.high.url"
+              />
             </div>
           </div>
         </el-carousel-item>
       </el-carousel>
     </div>
-    <el-carousel
-      v-else
-      :type="viewportSize > 1100 && `card`"
-      :autoplay="false"
-      height="500px"
-    >
-      <el-carousel-item v-for="item in items" :key="item.id">
+    <el-carousel v-else :autoplay="false" height="480px">
+      <el-carousel-item v-for="item in items.items" :key="item.id">
         <div class="mx-auto w-full">
           <h3 class="text-xl mb-4 text-center">{{ item.title }}</h3>
           <router-link :to="`/migrate/${item.id}`">
@@ -94,7 +82,10 @@
             </el-button>
           </router-link>
           <div class="flex justify-center items-center">
-            <img :src="item.src" :key="item.src" />
+            <img
+              :src="item.snippet.thumbnails.high.url"
+              :key="item.snippet.thumbnails.high.url"
+            />
           </div>
         </div>
       </el-carousel-item>
@@ -120,8 +111,9 @@ interface Props {
   migration: [MigrationTypes, MigrationTypes];
 }
 
-const { hasSpotifyAuth, hasYoutubeAuth } = useAuth();
+const { hasSpotifyAuth, hasYoutubeAuth, access_token } = useAuth();
 const { items, migration } = defineProps<Props>();
+
 const type = migration[0];
 const { viewportSize } = useViewport();
 </script>

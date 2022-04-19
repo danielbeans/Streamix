@@ -29,7 +29,7 @@ const jwt = reactive<JWTObject>({
   exp: 0,
 });
 
-export default function useAuth() {
+export default function useAuth(refresh = false) {
   const initialAuthState = reactive<AuthObject>({
     access_token: ``,
   });
@@ -62,7 +62,7 @@ export default function useAuth() {
   const isLoggedIn = computed(() => !!isValidAuth.value);
 
   const authenticate = async () => {
-    if (isLoggedIn.value && isValidAuth.value) return false;
+    if (!refresh && isLoggedIn.value && isValidAuth.value) return false;
     try {
       await run();
       if (data.value !== null) Object.assign(authState, data.value); // ! Remember to check status for success
@@ -78,10 +78,8 @@ export default function useAuth() {
     Object.assign(jwt, intialJWT);
   };
 
-  const setAccessToken = (accessToken: string) => {
-    console.log(accessToken);
-    authState.access_token = accessToken;
-  };
+  const setAccessToken = (accessToken: string) =>
+    (authState.access_token = accessToken);
 
   const decodeJWT = (token: string): JWTObject | null => {
     try {
@@ -106,6 +104,7 @@ export default function useAuth() {
     unauthenticate,
     isLoggedIn,
     isValidAuth,
+    requestNewToken: run,
     setAccessToken,
     ...toRefs(authState),
     ...toRefs(jwt),

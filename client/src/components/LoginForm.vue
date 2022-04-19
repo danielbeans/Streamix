@@ -129,6 +129,7 @@ watchEffect(() => {
 
 const { dialogInfo, dialogVisible } = useDialog(
   status,
+  data,
   {
     title: `Success`,
     message: `You have successfully logged in. Please press Ok to continue to the dashboard.`,

@@ -8,17 +8,18 @@ type ResponseError = { error: string };
 
 export default function useAxios<T>(
   config: AxiosRequestConfig,
-  runOnMount = false
+  runOnMount = false,
+  defaultValue = null
 ) {
   const status = ref<FetchStatus>(FetchStatus.IDLE);
-  const data = ref<T | ResponseError | null>(null);
+  const data = ref<T | ResponseError | null>(defaultValue);
 
   async function fetchData<T>() {
     status.value = FetchStatus.RUNNING;
     try {
       const res = await axios(config);
       status.value = FetchStatus.SUCCESS;
-      return res.data as T;
+      return JSON.parse(JSON.stringify(res.data)) as T;
     } catch (error) {
       status.value = FetchStatus.ERROR;
       const res = error as AxiosError;

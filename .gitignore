@@ -3,3 +3,4 @@ env
 __pycache__
 Streamix.code-workspace
 .env
+client_secret.json

@@ -62,6 +62,7 @@ class SpotifyAuth(APIView):
 
 
 class SpotifyCallback(APIView):
+
     def get(self, request):
         try:
             auth_code = request.GET.get('code', '')
@@ -75,9 +76,54 @@ class SpotifyCallback(APIView):
 # !! TODO Add exceptions
 class SpotifyUser(APIView):
     def get(self, request):
-        return SpotifyController.get_user(validate_jwt_syntax(request))
+        s = SpotifyController()
+        return s.get_user(validate_jwt_syntax(request))
 
 
 class SpotifyPlaylists(APIView):
+    def get(self, request, playlist_id=None):
+        s = SpotifyController()
+        if playlist_id is not None:
+            return s.get_playlist_tracks(validate_jwt_syntax(request), playlist_id)
+        return s.get_playlists(validate_jwt_syntax(request))
+
+
+class SpotifyTracks(APIView):
+    def get(self, request, playlist_id=None):
+        s = SpotifyController()
+        return s.get_playlist_tracks(validate_jwt_syntax(request), playlist_id)
+
+
+class YoutubeAuth(APIView):
     def get(self, request):
-        return SpotifyController.get_playlists(validate_jwt_syntax(request))
+        try:
+            res = YoutubeController.get_auth_code(validate_jwt_syntax(request))
+            return redirect(res)
+        except DecodeError:
+            return Response(f'JWT Invalid', status=status.HTTP_401_UNAUTHORIZED)
+
+
+class YoutubeCallback(APIView):
+    def get(self, request):
+        try:
+            res = YoutubeController.get_tokens(request)
+            return redirect('http://localhost:3000/dashboard?' + res)
+        except:
+            return redirect('http://localhost:3000/dashboard?error=1')
+
+
+class YoutubePlaylists(APIView):
+    def get(self, request):
+        return YoutubeController.get_playlists(validate_jwt_syntax(request))
+
+
+class PlaylistCreate(APIView):
+    def post(self, request, to_platform=None):
+        spotify_controller = SpotifyController()
+        if to_platform is not None:
+            if to_platform == 'youtube':
+                print('youtube!')
+            elif to_platform == 'spotify':
+                res = PlaylistController.create_spotify(
+                    spotify_controller, validate_jwt_syntax(request), request.data)
+        return res
