@@ -96,7 +96,7 @@ class SpotifyController():
         else:
             return Response(f'Authentication unsuccessful', status=status.HTTP_401_UNAUTHORIZED)
 
-    # !! TODO Write logic for refreshing Spotify tokens
+    # !! TODO Logic needs to be placed into a function
     def get_tokens(code: str, grant_type: GRANT_TYPE):
         global env
         if len(code) != 0:
@@ -105,9 +105,9 @@ class SpotifyController():
                 'code': code,
                 'redirect_uri': 'http://localhost:8000/api/auth/spotify/callback'
             }
-            spotify_auth = env('SPOTIFY_ID') + ':' + env('SPOTIFY_SECRET')
+            spotify_auth_id = env('SPOTIFY_ID') + ':' + env('SPOTIFY_SECRET')
             encoded_spotify_auth = 'Basic '.encode(
-                'ascii') + base64.b64encode(spotify_auth.encode('ascii'))
+                'ascii') + base64.b64encode(spotify_auth_id.encode('ascii'))
             headers = {
                 'Authorization': encoded_spotify_auth,
                 'Content-Type': 'application/x-www-form-urlencoded'
@@ -133,6 +133,7 @@ class SpotifyController():
         if authenticate_user({'Authorization': token}):
             user = decode_jwt(token)
             spotify_auth = get_user_data(user, 'spotify_auth')
+            cache.set('user', user)
             if validate_spotify_access_token(spotify_auth):
                 headers = {'Authorization': spotify_auth['access_token']}
                 # ! Add Exception for when access_token is expired
@@ -179,7 +180,6 @@ class SpotifyController():
 
 
 class YoutubeController():
-        
     def get_auth_code(token: str):
         global env
         if authenticate_user({'Authorization': token}):
@@ -228,8 +228,8 @@ class YoutubeController():
                 youtube.playlists().list(part='snippet', mine=True).execute())
             return Response(json.loads(playlists), status=status.HTTP_200_OK)
         return Response(f'Authentication unsuccessful', status=status.HTTP_401_UNAUTHORIZED)
-    
-    def get_playlist_tracks(token: str, playlist_id:str):
+
+    def get_playlist_tracks(token: str, playlist_id: str):
         global env, db_users
         if authenticate_user({'Authorization': token}):
             user = decode_jwt(token)
@@ -256,17 +256,51 @@ class PlaylistController():
                     playlist_name = json.dumps({'name': playlist_name})
                     headers = {'Authorization': spotify_auth['access_token']}
                     cache.set('headers', headers)
+                    # ! Validate this response
                     res = requests.post(
                         f'{SPOTIFY_API_URI}/users/{user_id}/playlists', headers=headers, data=playlist_name).json()
-                    print(res)
                     playlist_id = res['id']
                     track_uris, track_names = search_for_spotify_tracks(
                         data['tracks'])
                     track_uris = json.dumps({'uris': track_uris})
+                    # TODO Response has useful data
                     snapshot_id = requests.post(
                         f'{SPOTIFY_API_URI}/playlists/{playlist_id}/tracks', headers=headers, data=track_uris).json()
                     res = {
                         'found_tracks': track_names
                     }
                     return Response(res, status=status.HTTP_200_OK)
+        return Response(f'Authentication unsuccessful', status=status.HTTP_401_UNAUTHORIZED)
+
+    def create_youtube(token, data):
+        global env, db_users
+        if authenticate_user({'Authorization': token}):
+            user = decode_jwt(token)
+            youtube = build_youtube_service(user)
+            cache.set('youtube_service', youtube)
+            playlist_body = {
+                'snippet': {
+                    'title': data['playlist_name']
+                }
+            }
+            # ! Validate this response
+            res = youtube.playlists().insert(part='snippet', body=playlist_body).execute()
+            playlist_id = res['id']
+            video_ids, video_titles = search_for_youtube_tracks(data['tracks'])
+            for id in video_ids:
+                tracks_body = {
+                    'snippet': {
+                        'playlistId': playlist_id,
+                        'resourceId': {
+                            "kind": "youtube#video",
+                            'videoId': id
+                        }
+                    }
+                }
+                # TODO Response has useful data
+                res = youtube.playlistItems().insert(part='snippet', body=tracks_body).execute()
+            res = {
+                'found_tracks': video_titles
+            }
+            return Response(res, status=status.HTTP_200_OK)
         return Response(f'Authentication unsuccessful', status=status.HTTP_401_UNAUTHORIZED)

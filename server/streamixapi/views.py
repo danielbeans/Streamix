@@ -116,6 +116,7 @@ class YoutubePlaylists(APIView):
     def get(self, request):
         return YoutubeController.get_playlists(validate_jwt_syntax(request))
 
+
 class YoutubeTracks(APIView):
     def post(self, request):
         return YoutubeController.get_playlist_tracks(validate_jwt_syntax(request), request.data["playlist_id"])
@@ -126,7 +127,8 @@ class PlaylistCreate(APIView):
         spotify_controller = SpotifyController()
         if to_platform is not None:
             if to_platform == 'youtube':
-                print('youtube!')
+                res = PlaylistController.create_youtube(
+                    validate_jwt_syntax(request), request.data)
             elif to_platform == 'spotify':
                 res = PlaylistController.create_spotify(
                     spotify_controller, validate_jwt_syntax(request), request.data)

@@ -60,7 +60,6 @@ def credentials_to_dict(credentials):
 # Creates a service object to use to query YouTube API
 def build_youtube_service(user: dict):
     youtube_auth = get_user_data(user, 'youtube_auth')
-    print(youtube_auth)
     credentials = google.oauth2.credentials.Credentials(
         youtube_auth['token'],
         refresh_token=youtube_auth['refresh_token'],
