@@ -4,6 +4,8 @@ from rest_framework.views import APIView
 
 from .utils import GRANT_TYPE
 from .controllers import *
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import never_cache
 from .services import validate_jwt_syntax
 from pymongo.errors import DuplicateKeyError, InvalidName
 from jwt.exceptions import DecodeError
@@ -80,7 +82,9 @@ class SpotifyUser(APIView):
         return s.get_user(validate_jwt_syntax(request))
 
 
+
 class SpotifyPlaylists(APIView):
+    @method_decorator(never_cache)
     def get(self, request, playlist_id=None):
         s = SpotifyController()
         if playlist_id is not None:
@@ -89,6 +93,7 @@ class SpotifyPlaylists(APIView):
 
 
 class SpotifyTracks(APIView):
+    @method_decorator(never_cache)
     def get(self, request, playlist_id=None):
         s = SpotifyController()
         return s.get_playlist_tracks(validate_jwt_syntax(request), playlist_id)
@@ -113,11 +118,13 @@ class YoutubeCallback(APIView):
 
 
 class YoutubePlaylists(APIView):
+    @method_decorator(never_cache)
     def get(self, request):
         return YoutubeController.get_playlists(validate_jwt_syntax(request))
 
 
 class YoutubeTracks(APIView):
+    @method_decorator(never_cache)
     def post(self, request):
         return YoutubeController.get_playlist_tracks(validate_jwt_syntax(request), request.data["playlist_id"])
 

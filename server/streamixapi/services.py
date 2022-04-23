@@ -30,6 +30,7 @@ def authenticate_user(user: dict):
         return validate_jwt(user['Authorization'])
     else:
         found_user = db_users.find_one({'username': user['username']})
+ 
         if found_user:
             return check_password(user['password'], found_user['password'])
         else:
@@ -48,18 +49,14 @@ def signup_user(user: dict):
 def create_jwt(user: dict):
     global env, db_users
     found_user = db_users.find_one({'username': user['username']})
-    access_token_exp = (datetime.now() + timedelta(days=1)
-                        ).strftime('%m%d%Y%H%M%S')
-
+    access_token_exp = (datetime.now() + timedelta(days=1)).strftime('%m%d%Y%H%M%S')
     has_spotify_auth = False
+    cache.set("user", found_user)
     if 'spotify_auth' in found_user:
-        has_spotify_auth = validate_spotify_access_token(
-            found_user['spotify_auth'])
-
+        has_spotify_auth = validate_spotify_access_token(found_user['spotify_auth'])
     has_youtube_auth = False
     if 'youtube_auth' in found_user:
         has_youtube_auth = True
-
     access_token = jwt.encode({'id': str(found_user['_id']),
                                'username': found_user['username'],
                                'name': found_user['name'],

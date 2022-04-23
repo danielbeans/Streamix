@@ -1,5 +1,5 @@
 <template>
-  <el-container v-loading="!data?.items" class="mt-16">
+  <el-container v-loading="!data?.items" class="mt-16 justify-center">
     <MigrationList
       v-if="data?.items"
       :migration="migration"
@@ -23,8 +23,7 @@ export default defineComponent({
   setup() {
     const { id } = useRoute().params;
     const { access_token } = useAuth();
-    const { migration } = useRoute().query;
-    // ! fetch playlist data here
+    const { migration }: any = useRoute().query;
     const config = {
       method: migration[0] === MigrationTypes.SPOTIFY ? "get" : "post",
       headers: { Authorization: `Bearer ${access_token.value}` },
@@ -33,10 +32,10 @@ export default defineComponent({
           ? `/api/${migration[0].toLowerCase()}/tracks/${id}`
           : `/api/${migration[0].toLowerCase()}/tracks/`,
     };
-    const { data, status } = useAxios(
+    const { data, status } = useAxios<any>(
       migration[0] === MigrationTypes.SPOTIFY
         ? config
-        : { ...config, data: { playlist_id: id } },
+        : ({ ...config, data: { playlist_id: id } } as any),
       true
     );
     return {

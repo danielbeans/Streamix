@@ -29,6 +29,7 @@
       </div>
       <el-input
         v-model="form.password"
+        @keydown.enter="submitForm"
         type="password"
         size="large"
         placeholder="Password"

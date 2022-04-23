@@ -7,6 +7,7 @@ import environ
 import requests
 import base64
 import json
+from django.views.decorators.cache import never_cache
 from datetime import datetime, timedelta
 from django.core.cache import cache
 import google.oauth2.credentials
@@ -154,6 +155,7 @@ class SpotifyController():
             # Makes redundant database calls
             if self.get_user(token).status_code == status.HTTP_200_OK:
                 user = decode_jwt(token)
+                cache.set("user", user)
                 spotify_auth = get_user_data(user, 'spotify_auth')
                 if validate_spotify_access_token(spotify_auth):
                     user_id = get_user_data(user, 'spotify_info')['user_id']
@@ -169,6 +171,7 @@ class SpotifyController():
             # Makes redundant database calls
             if self.get_user(token).status_code == status.HTTP_200_OK:
                 user = decode_jwt(token)
+                cache.set("user", user)
                 spotify_auth = get_user_data(user, 'spotify_auth')
                 if validate_spotify_access_token(spotify_auth):
                     user_id = get_user_data(user, 'spotify_info')['user_id']
@@ -250,6 +253,7 @@ class PlaylistController():
             if spotify_controller.get_user(token).status_code == status.HTTP_200_OK:
                 user = decode_jwt(token)
                 spotify_auth = get_user_data(user, 'spotify_auth')
+                cache.set("user", user)
                 if validate_spotify_access_token(spotify_auth):
                     user_id = get_user_data(user, 'spotify_info')['user_id']
                     playlist_name = data['playlist_name']

@@ -76,6 +76,11 @@ export default function useAuth(refresh = false) {
   const unauthenticate = () => {
     Object.assign(authState, initialAuthState);
     Object.assign(jwt, intialJWT);
+    console.log(authState);
+    console.log(jwt);
+
+    localStorage.removeItem("access_token");
+    localStorage.clear();
   };
 
   const setAccessToken = (accessToken: string) =>
