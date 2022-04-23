@@ -90,7 +90,7 @@ class SpotifyController():
             res = {
                 'client_id': env('SPOTIFY_ID'),
                 'response_type': 'code',
-                'redirect_uri': 'http://localhost:8000/api/auth/spotify/callback',
+                'redirect_uri': env('REDIRECT_URI_BASE') + 'api/auth/spotify/callback',
                 'scope': scope
             }
             return res
@@ -104,7 +104,7 @@ class SpotifyController():
             data = {
                 'grant_type': grant_type,
                 'code': code,
-                'redirect_uri': 'http://localhost:8000/api/auth/spotify/callback'
+                'redirect_uri': env('REDIRECT_URI_BASE') + 'api/auth/spotify/callback'
             }
             spotify_auth_id = env('SPOTIFY_ID') + ':' + env('SPOTIFY_SECRET')
             encoded_spotify_auth = 'Basic '.encode(
@@ -192,7 +192,8 @@ class YoutubeController():
             flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
                 client_secret,
                 scopes=['https://www.googleapis.com/auth/youtube.force-ssl'])
-            flow.redirect_uri = 'http://localhost:8000/api/auth/youtube/callback'
+            flow.redirect_uri = env('REDIRECT_URI_BASE') + \
+                'api/auth/youtube/callback'
             authorization_url, state = flow.authorization_url(
                 access_type='offline', include_granted_scopes='true')
             # Sets state in cache to use later to store access tokens
@@ -210,7 +211,8 @@ class YoutubeController():
         flow = google_auth_oauthlib.flow.Flow.from_client_secrets_file(
             client_secret,
             scopes=['https://www.googleapis.com/auth/youtube.force-ssl'], state=state)
-        flow.redirect_uri = 'http://localhost:8000/api/auth/youtube/callback'
+        flow.redirect_uri = env('REDIRECT_URI_BASE') + \
+            'api/auth/youtube/callback'
         authorization_response = req.get_full_path()
         flow.fetch_token(authorization_response=authorization_response)
         youtube_auth = credentials_to_dict(flow.credentials)
